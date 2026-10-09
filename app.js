@@ -488,6 +488,26 @@
     if (y) y.textContent = new Date().getFullYear();
   }
 
+  function initHeroSlider() {
+    const slides = $$('.hero-media img');
+    const dots = $('.hero-dots');
+    if (slides.length < 2 || !dots) return;
+    let cur = 0, timer;
+    const show = (n) => {
+      cur = (n + slides.length) % slides.length;
+      slides.forEach((s, i) => s.classList.toggle('is-active', i === cur));
+      $$('button', dots).forEach((d, i) => d.setAttribute('aria-selected', i === cur));
+    };
+    const start = () => {
+      clearInterval(timer);
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) timer = setInterval(() => show(cur + 1), 6000);
+    };
+    dots.innerHTML = slides.map((_, i) => `<button type="button" role="tab" aria-label="Image ${i + 1}" aria-selected="${i === 0}"></button>`).join('');
+    $$('button', dots).forEach((d, i) => d.addEventListener('click', () => { show(i); start(); }));
+    slides.forEach((s) => { s.loading = 'eager'; });
+    start();
+  }
+
   function initReveal() {
     const els = $$('.reveal');
     if (!('IntersectionObserver' in window)) { els.forEach((e) => e.classList.add('is-in')); return; }
@@ -564,6 +584,7 @@
       console.error('FOPS_DATA failed to load — check data.js');
     }
     attachImgFallback();
+    initHeroSlider();
     initReveal();
     initCounters();
   }

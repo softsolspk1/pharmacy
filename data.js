@@ -248,7 +248,7 @@ const FOPS_DATA = {
     "id": "fac-137",
     "name": "Dr. Azra Riaz",
     "department": "Pharmacology",
-    "designation": "Professor",
+    "designation": "Chairperson and Professor",
     "qualification": "Ph.D., M.Phil., BPharm. (University of Karachi)",
     "year_of_association": "2000",
     "email": "mhshoaib@uok.edu.pk",
