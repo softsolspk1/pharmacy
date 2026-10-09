@@ -1,0 +1,16 @@
+# Raw extraction output & build helpers (optimized site images live in assets/img and assets/brand)
+assets/campus/
+assets/faculty/
+assets/leadership/
+assets/web/
+assets/web2/
+assets/web3/
+extracted_images/
+*.py
+vc_page_raw.html
+faculty_final.json
+curriculum_deficiency.txt
+1.html
+__pycache__/
+.DS_Store
+Thumbs.db
