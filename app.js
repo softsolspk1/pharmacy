@@ -378,15 +378,21 @@
 
   /* ---------- Global search ---------- */
   let searchIndex = [];
+  // Scroll to a section on this page, or open the page that holds it
+  function jumpTo(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    else location.href = id === 'alumni' ? 'alumni.html' : 'index.html#' + id;
+  }
   function buildIndex() {
     searchIndex = [];
     D.faculty.forEach((f) => searchIndex.push({ type: 'Faculty', title: f.name, sub: `${f.designation} · ${deptOf(f).join(', ')}`, img: f.image, text: [f.name, f.designation, f.department, f.bio].join(' '), go: () => { closeModals(); openProfile(f.id); } }));
-    D.departments.forEach((d) => searchIndex.push({ type: 'Department', title: d.name, sub: d.tagline, ico: DEPT_ICONS[d.id], text: [d.name, d.tagline, d.overview, (d.labs || []).join(' ')].join(' '), go: () => { closeModals(); selectDept(d.id); $('#departments').scrollIntoView({ behavior: 'smooth' }); } }));
-    D.curriculum.forEach((s, i) => s.courses.forEach((c) => searchIndex.push({ type: 'Course', title: `${c.code.replace(/^\*+/, '')} · ${c.title}`, sub: `${s.title} · ${c.cr_hrs} Cr. Hrs.`, ico: 'book', text: [c.code, c.title, c.category].join(' '), go: () => { closeModals(); selectSem(i); $('#program').scrollIntoView({ behavior: 'smooth' }); } })));
+    D.departments.forEach((d) => searchIndex.push({ type: 'Department', title: d.name, sub: d.tagline, ico: DEPT_ICONS[d.id], text: [d.name, d.tagline, d.overview, (d.labs || []).join(' ')].join(' '), go: () => { closeModals(); if (!IS_HOME) return jumpTo('departments'); selectDept(d.id); $('#departments').scrollIntoView({ behavior: 'smooth' }); } }));
+    D.curriculum.forEach((s, i) => s.courses.forEach((c) => searchIndex.push({ type: 'Course', title: `${c.code.replace(/^\*+/, '')} · ${c.title}`, sub: `${s.title} · ${c.cr_hrs} Cr. Hrs.`, ico: 'book', text: [c.code, c.title, c.category].join(' '), go: () => { closeModals(); if (!IS_HOME) return jumpTo('program'); selectSem(i); $('#program').scrollIntoView({ behavior: 'smooth' }); } })));
     [
       ['Admissions & merit categories', 'admissions', 'clip'], ['Academic calendar 2027', 'calendar', 'cal'], ['Research facilities: RIPS, BBRF, Tibb-e-Nabavi', 'research', 'flask'],
-      ['PJPS & publications', 'publications', 'file'], ['Student clubs (KUPSC)', 'student-life', 'users'], ['Contact the Dean\'s Office', 'contact', 'mail'], ['History & milestones', 'about', 'building']
-    ].forEach(([t, id, ico]) => searchIndex.push({ type: 'Page', title: t, sub: 'Jump to section', ico, text: t, go: () => { closeModals(); document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); } }));
+      ['PJPS & publications', 'publications', 'file'], ['Student clubs (KUPSC)', 'student-life', 'users'], ['Alumni registration', 'alumni', 'users'],['Contact the Dean\'s Office', 'contact', 'mail'], ['History & milestones', 'about', 'building']
+    ].forEach(([t, id, ico]) => searchIndex.push({ type: 'Page', title: t, sub: 'Jump to section', ico, text: t, go: () => { closeModals(); jumpTo(id); } }));
   }
   function openSearch() {
     openModal('#searchModal');
@@ -541,45 +547,102 @@
     els.forEach((e) => io.observe(e));
   }
 
-  /* ---------- Contact form (mailto) ---------- */
+  /* ---------- Forms (delivered by email via FormSubmit) ---------- */
+  const FORM_ENDPOINT = 'https://formsubmit.co/';
+  const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  const feedback = (el, ok, msg) => { el.className = 'form-feedback ' + (ok ? 'ok' : 'err'); el.textContent = msg; };
+
   function initContact() {
     const form = $('#contactForm');
     if (!form) return;
     const fb = $('#formFeedback');
-    form.addEventListener('submit', (e) => {
+    const btn = $('button[type="submit"]', form);
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = form.name.value.trim(), email = form.email.value.trim(), to = form.to.value, msg = form.message.value.trim();
-      if (!name || !email || !to || !msg || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-        fb.className = 'form-feedback err';
-        fb.textContent = 'Please fill in every field and enter a valid email address.';
+      const f = form.elements;
+      const name = f.name.value.trim(), email = f.email.value.trim(), topic = f.regarding.value, msg = f.message.value.trim();
+      if (!name || !email || !topic || !msg || !EMAIL_RE.test(email)) {
+        feedback(fb, false, 'Please fill in every field and enter a valid email address.');
         return;
       }
-      const [addr, topic] = to.split('|');
-      const subject = `Website enquiry${topic ? ' – ' + topic : ''} – ${name}`;
-      const body = `${msg}\n\n—\n${name}\n${email}`;
-      window.location.href = `mailto:${addr}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      fb.className = 'form-feedback ok';
-      fb.textContent = `Your email app should now open with a message to ${addr}. If it doesn't, write to ${addr} directly.`;
+      btn.disabled = true;
+      try {
+        const res = await fetch(FORM_ENDPOINT + 'ajax/deanpharm@uok.edu.pk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify({
+            _subject: `Website enquiry – ${topic} – ${name}`, _template: 'table', _honey: f._honey.value,
+            Name: name, email, Regarding: topic, Message: msg
+          })
+        });
+        const out = await res.json().catch(() => ({}));
+        if (!res.ok || String(out.success) === 'false') throw new Error(out.message || res.statusText);
+        form.reset();
+        feedback(fb, true, "Thank you. Your message has been sent to the Dean's Office.");
+      } catch (err) {
+        feedback(fb, false, 'Your message could not be sent. Please try again, or write to deanpharm@uok.edu.pk directly.');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
+  function initAlumni() {
+    const form = $('#alumniForm');
+    if (!form) return;
+    const fb = $('#alumniFeedback');
+    if (/[?&]alumni=thanks/.test(location.search)) {
+      feedback(fb, true, 'Thank you for registering. Your details have been received by the Faculty.');
+      history.replaceState(null, '', location.pathname + '#alumni');
+    }
+    form.addEventListener('submit', (e) => {
+      const missing = $$('[required]', form).filter((el) => el.type === 'radio' ? !form.elements[el.name].value : !el.value.trim());
+      const email = form.elements.email.value.trim();
+      const photo = form.elements.Photograph.files[0];
+      let err = '';
+      if (missing.length) err = 'Please fill in every required field.';
+      else if (!EMAIL_RE.test(email)) err = 'Please enter a valid email address.';
+      else if (!/^\+?[\d\s-]{10,16}$/.test(form.elements['Phone (WhatsApp)'].value.trim())) err = 'Please enter a valid WhatsApp number.';
+      else if (!/^image\/(jpeg|png)$/.test(photo.type)) err = 'The photograph must be a JPG or PNG image.';
+      else if (photo.size > 5 * 1024 * 1024) err = 'The photograph must be 5 MB or smaller.';
+      if (err) {
+        e.preventDefault();
+        feedback(fb, false, err);
+        (missing[0] || form.elements.email).focus();
+        return;
+      }
+      // FormSubmit redirects here after delivering the email (file attachments need a regular POST, not AJAX)
+      form.elements._next.value = location.href.split(/[?#]/)[0] + '?alumni=thanks#alumni';
+      $('button[type="submit"]', form).disabled = true;
     });
   }
 
   /* ---------- Boot ---------- */
+  // index.html holds every section; inner pages (alumni.html) only share the header, footer and search
+  const IS_HOME = !!document.getElementById('home');
+
   function boot() {
     initChrome();
     initTabs();
     initModals();
     initGallery();
     initContact();
+    initAlumni();
     if (D) {
-      renderLeaders();
-      renderDepartments();
-      renderCurriculum();
-      renderFacultyFilters();
-      renderFacultyGrid();
-      renderMisc();
+      if (IS_HOME) {
+        renderLeaders();
+        renderDepartments();
+        renderCurriculum();
+        renderFacultyFilters();
+        renderFacultyGrid();
+        renderMisc();
+        $('#facSearch').addEventListener('input', renderFacultyGrid);
+      } else {
+        const fd = $('#footerDepts');
+        if (fd) fd.innerHTML = D.departments.map((d) => `<li><a href="index.html#departments">${esc(DEPT_SHORT[d.id])}</a></li>`).join('');
+      }
       buildIndex();
       initSearch();
-      $('#facSearch').addEventListener('input', renderFacultyGrid);
     } else {
       console.error('FOPS_DATA failed to load — check data.js');
     }

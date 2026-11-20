@@ -485,11 +485,31 @@ details.def[open] summary svg { transform: rotate(90deg); }
 .cta-band p { margin: 0; color: rgba(255,255,255,.8); }
 .cta-band .actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
+/* Inner page header */
+.page-hero { position: relative; overflow: hidden; background: var(--brand-950); color: #fff; padding: 84px 0 76px; }
+.page-hero > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: .22; }
+.page-hero .container { position: relative; }
+.page-hero h1 { color: #fff; font-size: clamp(2.2rem, 4.6vw, 3.4rem); margin: 0 0 12px; }
+.page-hero p { max-width: 620px; margin: 0; font-size: 1.08rem; color: rgba(255,255,255,.78); }
+.crumbs { display: flex; gap: 10px; font-size: .84rem; color: rgba(255,255,255,.66); margin-bottom: 18px; }
+.crumbs a { color: #f2b48f; }
+.crumbs a:hover { color: #fff; }
+
+/* Alumni */
+.alumni-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 32px; align-items: start; }
+.alumni-info { display: flex; flex-direction: column; gap: 14px; }
+.choice-row { display: flex; gap: 10px; }
+.choice { flex: 1; display: flex; align-items: center; gap: 8px; padding: 11px 14px; border: 1px solid var(--line-2); border-radius: 10px; font-weight: 500 !important; cursor: pointer; }
+.choice:has(input:checked) { border-color: var(--brand-600); background: var(--brand-50); }
+.choice input { accent-color: var(--brand-600); }
+.field input[type="file"] { padding: 10px 12px; }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+
 /* Footer */
 .site-footer { background: var(--brand-950); color: rgba(255,255,255,.66); font-size: .9rem; padding: 76px 0 0; }
 .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px; padding-bottom: 54px; }
 .footer-brand .brand-marks { border-color: rgba(255,255,255,.18); }
-.footer-brand .brand-text strong { color: #fff; }
+.footer-brand .brand-text strong { color: #fff; line-height: 1.25; max-width: 240px; }
 .footer-brand .brand-text small, .footer-brand .brand-text span { color: rgba(255,255,255,.6); }
 .footer-brand p { margin: 20px 0 0; max-width: 360px; line-height: 1.7; }
 .site-footer h4 { font-family: var(--font-sans); color: #fff; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 18px; font-weight: 700; }
@@ -565,7 +585,7 @@ details.def[open] summary svg { transform: rotate(90deg); }
 }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1180px) {
+@media (max-width: 1240px) {
   .main-nav { display: none; }
   .menu-toggle { display: inline-grid; }
   .header-actions .btn { display: none; }
@@ -591,7 +611,7 @@ details.def[open] summary svg { transform: rotate(90deg); }
   .sem-btn { flex: none; border-color: var(--line); background: #fff; }
   .sem-btn small { display: none; }
   .fac-cards { grid-template-columns: repeat(2, 1fr); }
-  .pub-grid, .contact-grid, .program-extra { grid-template-columns: 1fr; }
+  .pub-grid, .contact-grid, .alumni-grid, .program-extra { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .gallery { grid-template-columns: repeat(3, 1fr); }
   .life-media .lm-float { right: 12px; }
@@ -659,4 +679,4 @@ img[src*="pharmacy-building"], img[src*="uok-gate-2"] { object-position: center 
   .hero h1 { font-size: 2.15rem; }
   .gallery .g-tall { grid-row: span 2; }
 }
-.curr-shell > *, .dept-panel > *, .pub-grid > *, .contact-grid > *, .life-grid > *, .about-grid > * { min-width: 0; }
+.curr-shell > *, .dept-panel > *, .pub-grid > *, .contact-grid > *, .alumni-grid > *, .life-grid > *, .about-grid > * { min-width: 0; }

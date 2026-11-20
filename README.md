@@ -7,6 +7,7 @@ Static website for the Faculty of Pharmacy and Pharmaceutical Sciences, Universi
 | Path | Purpose |
 | --- | --- |
 | `index.html` | Page markup (sections, navigation, modals) |
+| `alumni.html` | Alumni page with the registration form (shares the header, footer and search with `index.html`) |
 | `styles.css` | Design system and responsive layout |
 | `app.js` | Rendering of departments, curriculum, faculty directory, search, tabs and lightbox |
 | `data.js` | Content dataset (faculty, departments, curriculum, leadership, calendar), sourced from the Undergraduate Catalogue 2026–27 |
